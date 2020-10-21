@@ -4,18 +4,19 @@ extern crate systray;
 #[cfg(target_os = "linux")]
 fn main() -> Result<(), systray::Error> {
     let mut app;
+
     match systray::Application::new() {
         Ok(w) => app = w,
         Err(_) => panic!("Can't create window!"),
     }
    
    //Get the stdout of echo $PWD and add /assets/wg.svg 
-    app.set_icon_from_file("$PWD/assets/wg.svg")?;
+    let pwd: String = command_run("pwd");
+    app.set_icon_from_file(&(pwd + "/assets/wg.svg"))?;
 
    //Run: tunsafe wg.conf & 
     app.add_menu_item("Turn On", |_| {
         println!("Turning it on.");
-        getFolder();
         Ok::<_, systray::Error>(())
     })?;
     
@@ -37,17 +38,23 @@ fn main() -> Result<(), systray::Error> {
     Ok(())
 }
 
-fn getFolder(){
+fn command_run(command: &str) -> std::string::String {
     use std::process::Command;
-    let output = Command::new("sh")
-            .arg("-c")
-            .arg("pwd")
-            .output(); 
-    //return String::from_utf8_lossy(&out.stdout);
-    //
+
+    let output = Command::new(&command) 
+            .output()
+            .expect("Failed to run command");
+
     let out = output.stdout;
-    println!("{:?}", String::from_utf8_lossy(&out));
+    println!("{}", String::from_utf8_lossy(remove_slash(&out)));
+    
+    return String::from_utf8_lossy(remove_slash(&out)).to_string();
 }
+
+fn remove_slash(slice: &Vec<u8>) -> &[u8]{
+    return &slice[0..&slice.len()-1];
+}
+
 
 /*
  * To do:
@@ -55,28 +62,5 @@ fn getFolder(){
  *      - Add in App About
  *      - Write and installation script for building the binaries
  *      - Write Docs
- *
- *
- * NOTES:
- 
-#![allow(unused)]
-fn main() {
-use std::process::Command;
-
-let output = Command::new("sh")
-            .arg("-c")
-            .arg("pwd")
-            .output()
-            .expect("failed to execute process");
-
-
-let hello = output.stdout;
-println!("{:?}", remove_slash(&hello));
-println!("{:?}", String::from_utf8_lossy(remove_slash(&hello)));
-}
-
-fn remove_slash(mut slice: &Vec<u8>) -> &[u8]{
-    return &slice[0..&slice.len()-1];
-} 
-
+ */
 
