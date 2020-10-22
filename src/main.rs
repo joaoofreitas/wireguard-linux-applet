@@ -26,14 +26,19 @@ fn main() -> Result<(), systray::Error> {
         Ok::<_, systray::Error>(())
     })?;
 
-    //Run: xdg-open $PWD
-    app.add_menu_item("Select Wireguard Configuration File", |_| {
-        println!("Importing Config.");
+    app.add_menu_item("Drag/Select Wireguard Configuration File", |_| {
+        println!("Import Configuration");
+        open_config();
         Ok::<_, systray::Error>(())
     })?;
 
     app.add_menu_separator()?;
-
+    
+    app.add_menu_item("About", |_| {
+        open_url("https://www.github.com/joaoofreitas");
+        Ok::<_, systray::Error>(())
+    })?;
+    
     app.add_menu_item("Quit", |window| {
         window.quit();
         Ok::<_, systray::Error>(())
@@ -42,6 +47,13 @@ fn main() -> Result<(), systray::Error> {
     println!("Waiting on message!");
     app.wait_for_message()?;
     Ok(())
+}
+
+fn open_url(url: &str){ 
+    Command::new("xdg-open")
+            .arg(url)
+            .spawn()
+            .expect("Failed to open your browser. Exiting");
 }
 
 fn pwd_get() -> std::string::String {
@@ -57,6 +69,13 @@ fn pwd_get() -> std::string::String {
 
 fn remove_slash(slice: &Vec<u8>) -> &[u8]{
     return &slice[0..&slice.len()-1];
+}
+
+fn open_config(){
+    Command::new("xdg-open")
+            .arg(pwd_get() + "/config")
+            .spawn()
+            .expect("Failed to open your file manager.");
 }
 
 //Try to change this hardcoded part
