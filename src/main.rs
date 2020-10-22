@@ -1,5 +1,6 @@
 //#![allow(unused)]
 extern crate systray;
+use std::process::Command;
 
 #[cfg(target_os = "linux")]
 fn main() -> Result<(), systray::Error> {
@@ -10,18 +11,23 @@ fn main() -> Result<(), systray::Error> {
         Err(_) => panic!("Can't create window!"),
     }
    
-   //Get the stdout of echo $PWD and add /assets/wg.svg 
-    let pwd: String = command_run("pwd");
+    let pwd: String = pwd_get();
     app.set_icon_from_file(&(pwd + "/assets/wg.svg"))?;
 
-   //Run: tunsafe wg.conf & 
     app.add_menu_item("Turn On", |_| {
         println!("Turning it on.");
+        turn_vpn_on();
         Ok::<_, systray::Error>(())
     })?;
-    
+
+    app.add_menu_item("Turn Off", |_| {
+        println!("Turning it off.");
+        turn_vpn_off();
+        Ok::<_, systray::Error>(())
+    })?;
+
     //Run: xdg-open $PWD
-    app.add_menu_item("Place confiiguration file", |_| {
+    app.add_menu_item("Select Wireguard Configuration File", |_| {
         println!("Importing Config.");
         Ok::<_, systray::Error>(())
     })?;
@@ -38,12 +44,10 @@ fn main() -> Result<(), systray::Error> {
     Ok(())
 }
 
-fn command_run(command: &str) -> std::string::String {
-    use std::process::Command;
-
-    let output = Command::new(&command) 
+fn pwd_get() -> std::string::String {
+    let output = Command::new("pwd") 
             .output()
-            .expect("Failed to run command");
+            .expect("Failed to get the location of the installation");
 
     let out = output.stdout;
     println!("{}", String::from_utf8_lossy(remove_slash(&out)));
@@ -55,6 +59,20 @@ fn remove_slash(slice: &Vec<u8>) -> &[u8]{
     return &slice[0..&slice.len()-1];
 }
 
+//Try to change this hardcoded part
+fn turn_vpn_on() {
+    Command::new("tunsafe")
+            .arg(pwd_get() + "/config/config.conf")
+            .spawn()
+            .expect("Failed Connecting to VPN");
+}
+
+fn turn_vpn_off() {
+    Command::new("pkill")
+            .arg("tunsafe")
+            .spawn()
+            .expect("Failed Killing VPN");
+}
 
 /*
  * To do:
