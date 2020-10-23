@@ -1,1 +1,3 @@
-# wireguard-linux-applet
+# Wireguard Linux Applet
+
+On development... 🚧
