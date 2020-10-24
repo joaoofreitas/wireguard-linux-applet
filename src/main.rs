@@ -70,7 +70,7 @@ fn pwd_get() -> std::string::String {
 fn remove_slash(slice: &Vec<u8>) -> &[u8]{
     return &slice[0..&slice.len()-1];
 }
-
+// This too
 fn open_config(){
     Command::new("xdg-open")
             .arg(pwd_get() + "/config")
@@ -78,7 +78,6 @@ fn open_config(){
             .expect("Failed to open your file manager.");
 }
 
-//Try to change this hardcoded part
 fn turn_vpn_on() {
     Command::new("tunsafe")
             .arg(pwd_get() + "/config/config.conf")
